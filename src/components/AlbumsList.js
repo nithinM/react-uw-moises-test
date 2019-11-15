@@ -1,11 +1,12 @@
 import React from 'react';
 import {connect} from "react-redux";
-import { getAlbums } from "../actions/album.action"
+import {deleteAlbum, getAlbums} from "../actions/album.action"
 import { Row, Col } from 'react-flexbox-grid';
 import RaisedButton from 'material-ui/RaisedButton';
+import {toastr} from 'react-redux-toastr'
 import LoadingIndicator from "./common/LoadingIndicator";
 import ErrorIndicator from "./common/ErrorIndicator";
-import AlbumCard from "./common/AlbumCard";
+import AlbumCard from "./AlbumCard";
 
 const DATA_LIMIT =  18;
 const loadMoreStyle = {
@@ -17,6 +18,7 @@ class AlbumsList extends React.Component {
         albums: [],
         items: [],
         hasMore: true,
+        endIndex: 0
     };
 
     async componentDidMount() {
@@ -31,16 +33,25 @@ class AlbumsList extends React.Component {
             this.setState({
                 albums: [...album.list],
                 items: data.dataLoad,
-                hasMore: data.hasMore
+                hasMore: data.hasMore,
+                endIndex: data.endIndex
+            });
+        }
+
+        if (prevProps.album.list.length > album.list.length) {
+            const data = this.getNextData(album.list, true);
+            this.setState({
+                albums: [...album.list],
+                items: data.dataLoad,
+                hasMore: data.hasMore,
+                endIndex: data.endIndex
             });
         }
     };
 
     renderView = () => {
         const { album: {error, loading} } = this.props;
-        const { items, hasMore } = this.state;
-
-        console.log("renderView",  { items, hasMore });
+        const { items } = this.state;
 
         if ( loading ) {
             return <LoadingIndicator/>
@@ -58,6 +69,8 @@ class AlbumsList extends React.Component {
                             title={item.title}
                             id={item.id}
                             image={item.url}
+                            deleteAlbumHandler={this.deleteAlbumHandler}
+                            editAlbumHandler={this.editAlbumHandler}
                         />
                     </Col>
                 )
@@ -76,23 +89,43 @@ class AlbumsList extends React.Component {
 
         this.setState({
             items: [ ...items, ...data.dataLoad],
-            hasMore: data.hasMore
+            hasMore: data.hasMore,
+            endIndex: data.endIndex
         })
     };
 
-    getNextData = (list) => {
-        const { items } = this.state;
+    getNextData = (list, sameEndIndex = false) => {
+        const { items, endIndex: stateEndIndex } = this.state;
         const dataLength = items.length;
-        const endIndex = dataLength+DATA_LIMIT;
+        const endIndex = sameEndIndex ? stateEndIndex : stateEndIndex + DATA_LIMIT;
+        console.log({endIndex});
         const dataLoad = list.slice(dataLength, dataLength+DATA_LIMIT);
         const hasMore = list.slice(dataLength, endIndex + 1).length === DATA_LIMIT + 1;
 
-        return { dataLoad, hasMore }
+        return { dataLoad, hasMore, endIndex}
+    };
+
+    deleteAlbumHandler = (id) => {
+        console.log("deleteAlbumHandler", id);
+        const toastrConfirmOptions = {
+            onOk: async () => {
+                try {
+                    await this.props.deleteAlbum(id);
+                    toastr.success('Success', 'Album successfully deleted')
+                } catch (e) {
+                    console.log(e);
+                }
+            },
+        };
+        toastr.confirm('Are you sure about that!', toastrConfirmOptions);
+    };
+
+    editAlbumHandler = (id) => {
+        console.log("editAlbumHandler", id);
     };
 
     render() {
-        console.log(this.state);
-        const { hasMore } = this.state;
+        const { hasMore, loading } = this.state;
         return (
             <div className="container">
                 <Row center="xs">
@@ -100,7 +133,7 @@ class AlbumsList extends React.Component {
                         {
                             <Row center="xs">
                                 { this.renderView() }
-                                { hasMore && (
+                                { !loading && hasMore && (
                                     <RaisedButton
                                         label="Load more"
                                         style={loadMoreStyle}
@@ -126,6 +159,9 @@ const mapDispatchToProps = (dispatch) => {
     return {
         getAlbums: () => {
             dispatch(getAlbums());
+        },
+        deleteAlbum: (id) => {
+            dispatch(deleteAlbum(id))
         }
     };
 };

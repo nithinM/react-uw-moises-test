@@ -12,7 +12,7 @@ const cardStyle = {
 };
 
 const AlbumCard = props => {
-    const {title, id, image} = props;
+    const {title, id, image, editAlbumHandler, deleteAlbumHandler} = props;
     return (
         <Card style={cardStyle}>
             <CardMedia
@@ -26,12 +26,12 @@ const AlbumCard = props => {
                     <BottomNavigationItem
                         label="Edit"
                         icon={editIcon}
-                        onClick={() => this.select(0)}
+                        onClick={() => editAlbumHandler(id)}
                     />
                     <BottomNavigationItem
                         label="Delete"
                         icon={deleteIcon}
-                        onClick={() => this.select(1)}
+                        onClick={() => deleteAlbumHandler(id)}
                     />
                 </BottomNavigation>
             </CardActions>
