@@ -6,5 +6,6 @@ function getConfig() {
 }
 export default {
     'aws': getConfig().aws,
-    'app': getConfig().app
+    'app': getConfig().app,
+    "api": getConfig().api
 }
