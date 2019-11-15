@@ -1,0 +1,3 @@
+export const GET_ALBUM_START = "GET_ALBUM_START";
+export const GET_ALBUM_SUCCESS = "GET_ALBUM_SUCCESS";
+export const GET_ALBUM_FAIL = "GET_ALBUM_FAIL";
