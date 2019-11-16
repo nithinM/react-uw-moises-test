@@ -41,6 +41,27 @@ export const deleteAlbumError = error => {
     };
 };
 
+export const updateAlbumStart = () => {
+    return {
+        type: actionTypes.UPDATE_ALBUM_START
+    };
+};
+
+export const updateAlbumSuccess = (id, data) => {
+    return {
+        type: actionTypes.UPDATE_ALBUM_SUCCESS,
+        id,
+        payload: data
+    };
+};
+
+export const updateAlbumError = error => {
+    return {
+        type: actionTypes.UPDATE_ALBUM_FAIL,
+        payload: error
+    };
+};
+
 export const getAlbums = () => {
     return async dispatch => {
         dispatch( getAlbumsStart() );
@@ -62,6 +83,19 @@ export const deleteAlbum = (id) => {
             dispatch( deleteAlbumSuccess(id) )
         } catch (error) {
             dispatch( deleteAlbumError(error) )
+        }
+    };
+};
+
+export const updateAlbum = (id, payload) => {
+    return async dispatch => {
+        dispatch( updateAlbumStart() );
+        try {
+            // const response = await API.remove(`albums/${id}`);
+            // console.log("updateAlbum", response);
+            dispatch( updateAlbumSuccess(id, payload) )
+        } catch (error) {
+            dispatch( updateAlbumError(error) )
         }
     };
 };

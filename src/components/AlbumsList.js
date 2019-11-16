@@ -1,12 +1,13 @@
 import React from 'react';
 import {connect} from "react-redux";
-import {deleteAlbum, getAlbums} from "../actions/album.action"
+import {deleteAlbum, getAlbums, updateAlbum} from "../actions/album.action"
 import { Row, Col } from 'react-flexbox-grid';
 import RaisedButton from 'material-ui/RaisedButton';
 import {toastr} from 'react-redux-toastr'
 import LoadingIndicator from "./common/LoadingIndicator";
 import ErrorIndicator from "./common/ErrorIndicator";
 import AlbumCard from "./AlbumCard";
+import AlbumEdit from "./AlbumEdit";
 
 const DATA_LIMIT =  18;
 const loadMoreStyle = {
@@ -18,7 +19,9 @@ class AlbumsList extends React.Component {
         albums: [],
         items: [],
         hasMore: true,
-        endIndex: 0
+        endIndex: 0,
+        isDialogOpen: false,
+        editAlbumId: null
     };
 
     async componentDidMount() {
@@ -28,7 +31,6 @@ class AlbumsList extends React.Component {
     componentDidUpdate(prevProps, prevState) {
         const { album } = this.props;
         if (prevProps.album.list.length === 0 && album.list.length > 0) {
-            console.log(album.list.length, prevProps.album.list.length, );
             const data = this.getNextData(album.list);
             this.setState({
                 albums: [...album.list],
@@ -39,6 +41,19 @@ class AlbumsList extends React.Component {
         }
 
         if (prevProps.album.list.length > album.list.length) {
+            const data = this.getNextData(album.list, true);
+            this.setState({
+                albums: [...album.list],
+                items: data.dataLoad,
+                hasMore: data.hasMore,
+                endIndex: data.endIndex
+            });
+        }
+
+        if (prevProps.album.list.length === album.list.length &&
+            prevProps.album.list.length > 0 &&
+            JSON.stringify(prevProps.album.list) !== JSON.stringify(album.list)
+        ) {
             const data = this.getNextData(album.list, true);
             this.setState({
                 albums: [...album.list],
@@ -97,23 +112,22 @@ class AlbumsList extends React.Component {
     getNextData = (list, sameEndIndex = false) => {
         const { items, endIndex: stateEndIndex } = this.state;
         const dataLength = items.length;
+        const startIndex = sameEndIndex ? 0 : dataLength;
         const endIndex = sameEndIndex ? stateEndIndex : stateEndIndex + DATA_LIMIT;
-        console.log({endIndex});
-        const dataLoad = list.slice(dataLength, dataLength+DATA_LIMIT);
-        const hasMore = list.slice(dataLength, endIndex + 1).length === DATA_LIMIT + 1;
+        const dataLoad = list.slice(startIndex, endIndex);
+        const hasMore = list.slice(startIndex, endIndex + 1).length === DATA_LIMIT + 1;
 
         return { dataLoad, hasMore, endIndex}
     };
 
     deleteAlbumHandler = (id) => {
-        console.log("deleteAlbumHandler", id);
         const toastrConfirmOptions = {
             onOk: async () => {
                 try {
                     await this.props.deleteAlbum(id);
-                    toastr.success('Success', 'Album successfully deleted')
+                    toastr.success('Success', 'Album successfully deleted');
                 } catch (e) {
-                    console.log(e);
+                    toastr.error('Error', 'Something went wrong, please try again later.');
                 }
             },
         };
@@ -121,13 +135,45 @@ class AlbumsList extends React.Component {
     };
 
     editAlbumHandler = (id) => {
-        console.log("editAlbumHandler", id);
+        const { items } = this.state;
+        this.setState({
+            isDialogOpen: true,
+            editAlbumId: id,
+        })
+    };
+
+    dialogCloseHandler = () => {
+        this.setState({
+            isDialogOpen: false
+        })
+    };
+
+    onSubmitHandler = async (form) => {
+        const { updateAlbum } = this.props;
+        const { editAlbumId } = this.state;
+
+        try {
+            await updateAlbum(editAlbumId, form);
+            toastr.success('Success', 'Album successfully updated');
+            this.setState({
+                isDialogOpen: false
+            })
+        } catch (e) {
+            toastr.error('Error', 'Something went wrong, please try again later.');
+        }
+
+
     };
 
     render() {
-        const { hasMore, loading } = this.state;
+        const { hasMore, loading, isDialogOpen, items, editAlbumId } = this.state;
         return (
             <div className="container">
+                <Row center="xs">
+                    <Col xs={8}>
+                        <h1>Albums</h1>
+                    </Col>
+                </Row>
                 <Row center="xs">
                     <Col xs={8}>
                         {
@@ -144,6 +190,12 @@ class AlbumsList extends React.Component {
                         }
                     </Col>
                 </Row>
+                <AlbumEdit
+                    dialogOpen={isDialogOpen}
+                    closeHandler={this.dialogCloseHandler}
+                    onSubmit={(formValues) => this.onSubmitHandler(formValues)}
+                    initialValues={items.filter(item => item.id === editAlbumId)[0]}
+                />
             </div>
         );
     }
@@ -162,6 +214,9 @@ const mapDispatchToProps = (dispatch) => {
         },
         deleteAlbum: (id) => {
             dispatch(deleteAlbum(id))
+        },
+        updateAlbum: (id, payload) => {
+            dispatch(updateAlbum(id, payload));
         }
     };
 };
