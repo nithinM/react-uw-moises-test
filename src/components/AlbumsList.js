@@ -135,7 +135,6 @@ class AlbumsList extends React.Component {
     };
 
     editAlbumHandler = (id) => {
-        const { items } = this.state;
         this.setState({
             isDialogOpen: true,
             editAlbumId: id,

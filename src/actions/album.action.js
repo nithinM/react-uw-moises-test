@@ -78,7 +78,7 @@ export const deleteAlbum = (id) => {
     return async dispatch => {
         dispatch( deleteAlbumStart() );
         try {
-            const response = await API.remove(`albums/${id}`);
+            await API.remove(`albums/${id}`);
             dispatch( deleteAlbumSuccess(id) )
         } catch (error) {
             dispatch( deleteAlbumError(error) )
