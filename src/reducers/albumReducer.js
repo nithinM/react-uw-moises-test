@@ -143,7 +143,7 @@ const updateAlbumFail = (state, payload) => {
  * @param action
  * @returns {{albums: [], loading: boolean, error: null}|{loading: boolean}|{albums: *, loading: boolean}|{loading: boolean, error: *}}
  */
-const userReducer = (state = initialState, action) => {
+const albumReducer = (state = initialState, action) => {
     switch (action.type) {
         case actionTypes.GET_ALBUM_START: return (getAlbumsStart(state));
         case actionTypes.GET_ALBUM_SUCCESS: return (getAlbumsSuccess(state, action.payload));
@@ -158,4 +158,4 @@ const userReducer = (state = initialState, action) => {
     }
 };
 
-export default userReducer;
+export default albumReducer;

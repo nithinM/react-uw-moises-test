@@ -79,7 +79,6 @@ export const deleteAlbum = (id) => {
         dispatch( deleteAlbumStart() );
         try {
             const response = await API.remove(`albums/${id}`);
-            console.log("deleteAlbum", response);
             dispatch( deleteAlbumSuccess(id) )
         } catch (error) {
             dispatch( deleteAlbumError(error) )
@@ -92,7 +91,6 @@ export const updateAlbum = (id, payload) => {
         dispatch( updateAlbumStart() );
         try {
             // const response = await API.remove(`albums/${id}`);
-            // console.log("updateAlbum", response);
             dispatch( updateAlbumSuccess(id, payload) )
         } catch (error) {
             dispatch( updateAlbumError(error) )
