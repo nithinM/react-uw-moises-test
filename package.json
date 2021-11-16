@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "amazon-cognito-identity-js": "^1.28.0",
-    "aws-sdk": "^2.171.0",
+    "aws-sdk": "^2.814.0",
     "axios": "^0.17.1",
     "jwt-decode": "^2.2.0",
     "material-ui": "^0.20.0",
